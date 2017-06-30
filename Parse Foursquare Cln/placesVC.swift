@@ -7,29 +7,84 @@
 //
 
 import UIKit
+import Parse
 
-class placesVC: UIViewController {
+class placesVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
+    @IBOutlet weak var tableView: UITableView!
+    
+    var placeNameArray = [String]()
+    
+    var chosenPlace = ""
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        getData()
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    func getData() {
+        let query = PFQuery(className: "Places")
+        query.findObjectsInBackground { (objects, error) in
+            if error != nil {
+                let alert = UIAlertController(title: "Error", message: error?.localizedDescription, preferredStyle: UIAlertControllerStyle.alert)
+                let okButton = UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil)
+                alert.addAction(okButton)
+                self.present(alert, animated: true, completion: nil)
+            } else {
+                self.placeNameArray.removeAll(keepingCapacity: false)
+                for object in objects! {
+                    self.placeNameArray.append(object.object(forKey: "name") as! String)
+                }
+                self.tableView.reloadData()
+            }
+        }
+        
+        
     }
-    */
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "fromplacesVCtodetailsVC" {
+            let destinationVC = segue.destination as! detailsVC
+            destinationVC.selectedPlace = self.chosenPlace
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.chosenPlace = placeNameArray[indexPath.row]
+        self.performSegue(withIdentifier: "fromplacesVCtodetailsVC", sender: nil)
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = UITableViewCell()
+        cell.textLabel?.text = placeNameArray[indexPath.row]
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return placeNameArray.count
+    }
 
+
+    @IBAction func logoutClicked(_ sender: Any) {
+        
+        UserDefaults.standard.removeObject(forKey: "userLoggedIn")
+        UserDefaults.standard.synchronize()
+        
+        let signInVC = self.storyboard?.instantiateViewController(withIdentifier: "signInVC") as! signInVC
+        let delegate : AppDelegate = UIApplication.shared.delegate as! AppDelegate
+        delegate.window?.rootViewController = signInVC
+        delegate.rememberLogIn()
+        
+    }
+    
+    
+    @IBAction func addClicked(_ sender: Any) {
+        
+        self.performSegue(withIdentifier: "fromplacesVCtoimageVC", sender: nil)
+    }
+    
 }

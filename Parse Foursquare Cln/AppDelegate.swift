@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Parse
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,6 +17,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        let myConfig = ParseClientConfiguration { (ParseMutableClientConfiguration) in
+            
+            ParseMutableClientConfiguration.applicationId = "588ef971dc85a9ef477abda168ae241d14c83007"
+            ParseMutableClientConfiguration.clientKey = "98ba3fe85825fec6e1cfe21ccfcb42c1e90d1d8d"
+            ParseMutableClientConfiguration.server = "http://ec2-35-167-180-74.us-west-2.compute.amazonaws.com:80/parse"
+            
+        }
+        
+        Parse.initialize(with: myConfig)
+        
+        let defaultACL = PFACL()
+        
+        defaultACL.getPublicReadAccess = true
+        defaultACL.getPublicWriteAccess = true
+        
+        PFACL.setDefault(defaultACL, withAccessForCurrentUser: true)
+        
+        rememberLogIn()
+        
         return true
     }
 
@@ -40,7 +61,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
-
+    
+    
+    func rememberLogIn() {
+        
+        let user : String? = UserDefaults.standard.string(forKey: "userLoggedIn")
+        if user != nil {
+            
+            let board : UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+            let navigationController = board.instantiateViewController(withIdentifier: "navigationVC") as! UINavigationController
+            window?.rootViewController = navigationController
+            
+        }
+        
+    }
 
 }
 

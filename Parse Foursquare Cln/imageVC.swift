@@ -8,28 +8,73 @@
 
 import UIKit
 
-class imageVC: UIViewController {
+    var globalName = ""
+    var globalType = ""
+    var globalAtmosphere = ""
+    var globalImage = UIImage()
 
+
+class imageVC: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    @IBOutlet weak var placeNameText: UITextField!
+    @IBOutlet weak var placeTypeText: UITextField!
+    @IBOutlet weak var placeAtmosphereText: UITextField!
+    @IBOutlet weak var placeImage: UIImageView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+        
+        
+        
+        placeImage.isUserInteractionEnabled = true
+        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageVC.selectImage))
+        placeImage.addGestureRecognizer(gestureRecognizer)
+        
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    override func viewWillAppear(_ animated: Bool) {
+        globalName = ""
+        globalType = ""
+        globalAtmosphere = ""
+        globalImage = UIImage()
     }
-    */
+    
+    @objc func selectImage() {
+        
+        let picker = UIImagePickerController()
+        picker.delegate = self
+        picker.sourceType = .photoLibrary
+        picker.allowsEditing = true
+        self.present(picker, animated: true, completion: nil)
+        
+    }
+    
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        placeImage.image = info[UIImagePickerControllerEditedImage] as? UIImage
+        self.dismiss(animated: true, completion: nil)
+    }
 
+    @IBAction func nextClicked(_ sender: Any) {
+        
+        if placeNameText.text != "" && placeTypeText.text != "" && placeAtmosphereText.text != "" {
+            
+            if let chosenImage = placeImage.image {
+                
+                globalName = placeNameText.text!
+                globalType = placeTypeText.text!
+                globalAtmosphere = placeAtmosphereText.text!
+                globalImage = chosenImage
+                
+            }
+        }
+        
+        self.performSegue(withIdentifier: "fromimageVCtomapVC", sender: nil)
+        
+        placeNameText.text = ""
+        placeTypeText.text = ""
+        placeAtmosphereText.text = ""
+        placeImage.image = UIImage(named: "selectimage.png")
+
+    }
 }
